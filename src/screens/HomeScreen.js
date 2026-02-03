@@ -9,6 +9,7 @@ import {
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useExpenseStore } from '../store/expenseStore';
 import { useTheme } from '../utils/ThemeContext';
+import { useAuth } from '../utils/AuthContext';
 import { ExpenseItem } from '../components/ExpenseComponents';
 import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../utils/theme';
@@ -16,6 +17,7 @@ import { Colors, Spacing, BorderRadius, Typography, Shadows } from '../utils/the
 export const HomeScreen = ({ navigation }) => {
   const { expenses, deleteExpense, groups } = useExpenseStore();
   const { theme, isDark, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
   const [displayExpenses, setDisplayExpenses] = useState([]);
   const [deleteDialog, setDeleteDialog] = useState({
     visible: false,
@@ -52,17 +54,30 @@ export const HomeScreen = ({ navigation }) => {
   return (
     <View style={[styles.container, { backgroundColor: theme.bg.primary }]}>
       <View style={[styles.header, { backgroundColor: theme.bg.secondary, borderBottomColor: theme.border }]}>
-        <Text style={[styles.title, { color: theme.text.primary }]}>Expenses</Text>
-        <TouchableOpacity
-          style={[styles.themeToggle]}
-          onPress={toggleTheme}
-        >
-          <MaterialCommunityIcons
-            name={isDark ? 'white-balance-sunny' : 'moon-waning-crescent'}
-            size={20}
-            color={Colors.primary}
-          />
-        </TouchableOpacity>
+        <View style={styles.headerLeft}>
+          <Text style={[styles.title, { color: theme.text.primary }]}>Expenses</Text>
+          {user && (
+            <Text style={[styles.userName, { color: theme.text.secondary }]}>{user.name}</Text>
+          )}
+        </View>
+        <View style={styles.headerActions}>
+          <TouchableOpacity
+            style={[styles.themeToggle]}
+            onPress={toggleTheme}
+          >
+            <MaterialCommunityIcons
+              name={isDark ? 'white-balance-sunny' : 'moon-waning-crescent'}
+              size={20}
+              color={Colors.primary}
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.logoutButton, { backgroundColor: Colors.danger }]}
+            onPress={logout}
+          >
+            <MaterialCommunityIcons name="logout" size={18} color={Colors.white} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {displayExpenses.length === 0 ? (
@@ -128,17 +143,36 @@ const styles = StyleSheet.create({
     borderBottomColor: Colors.accent,
     ...Shadows.md,
   },
+  headerLeft: {
+    flex: 1,
+  },
+  headerActions: {
+    flexDirection: 'row',
+    gap: Spacing.md,
+    alignItems: 'center',
+  },
   title: {
     ...Typography.h2,
     fontWeight: '700',
     background: `linear-gradient(135deg, ${Colors.primary} 0%, ${Colors.accent} 100%)`,
     color: Colors.primary,
   },
+  userName: {
+    ...Typography.caption,
+    marginTop: Spacing.xs,
+  },
   themeToggle: {
     padding: Spacing.sm,
     borderRadius: BorderRadius.lg,
     backgroundColor: Colors.transparentPrimary,
     ...Shadows.md,
+  },
+  logoutButton: {
+    padding: Spacing.sm,
+    borderRadius: BorderRadius.lg,
+    ...Shadows.md,
+    borderTopWidth: 2,
+    borderTopColor: Colors.dangerLight,
   },
   addButton: {
     backgroundColor: Colors.primary,
